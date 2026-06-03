@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#15171c">
-<title>Recupera Excel — apre i file .xls/.xlsx che Excel rifiuta</title>
-<meta name="description" content="Strumento gratuito che recupera i file Excel esportati in formati vecchi o errati dai gestionali e li riconverte in .xlsx aprendoli con qualsiasi Excel. Tutto in locale, nessun caricamento online.">
+<title>Recupera Excel — recupera, analizza e converti file Excel/CSV</title>
+<meta name="description" content="Strumento gratuito: recupera i file Excel che non si aprono, analizza autore/date/fogli/formule e converte tra Excel e CSV. Tutto nel browser, nessun caricamento online.">
 <meta property="og:title" content="Recupera Excel">
-<meta property="og:description" content="Recupera i file Excel che non si aprono e riconvertili in .xlsx pulito. Funziona nel browser, offline, senza inviare nulla online.">
+<meta property="og:description" content="Recupera, analizza e converti file Excel e CSV. Tutto in locale, nessun dato inviato online.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2315171c'/%3E%3Cpath d='M9 8h9l5 5v11a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z' fill='none' stroke='%23ff8a1e' stroke-width='2'/%3E%3Cpath d='M16 14v6m0 0l-3-3m3 3l3-3' stroke='%23ff8a1e' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,93 +17,105 @@
   :root{
     --bg:#15171c;--panel:#1d2027;--panel-2:#23272f;--line-solid:#333843;
     --ink:#eef1f5;--muted:#8b93a1;--amber:#ff8a1e;--amber-soft:#ffb15e;
-    --green:#39d98a;--red:#ff6b6b;
+    --green:#39d98a;--red:#ff6b6b;--blue:#5aa9ff;
     --mono:'IBM Plex Mono',ui-monospace,monospace;--disp:'Bricolage Grotesque',sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:var(--bg);color:var(--ink);font-family:var(--mono);
-    -webkit-font-smoothing:antialiased;min-height:100vh;padding:30px 18px 50px;
-    background-image:
-      linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
-    background-size:34px 34px;
-  }
-  .wrap{max-width:800px;margin:0 auto}
-  header{margin-bottom:24px}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);-webkit-font-smoothing:antialiased;
+    min-height:100vh;padding:30px 18px 50px;
+    background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
+    background-size:34px 34px}
+  .wrap{max-width:820px;margin:0 auto}
+  header{margin-bottom:20px}
   .tag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);
-    display:inline-flex;align-items:center;gap:8px;margin-bottom:14px}
+    display:inline-flex;align-items:center;gap:8px;margin-bottom:12px}
   .tag::before{content:"";width:22px;height:1px;background:var(--amber)}
-  h1{font-family:var(--disp);font-weight:800;line-height:.96;
-    font-size:clamp(36px,8.5vw,62px);letter-spacing:-.025em;margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:800;line-height:.96;font-size:clamp(34px,8vw,56px);letter-spacing:-.025em}
   h1 .br{color:var(--amber)}
-  .lead{color:var(--muted);font-size:14px;line-height:1.65;max-width:58ch}
-  .lead b{color:var(--amber-soft);font-weight:600}
 
-  .drop{margin-top:26px;position:relative;border:1.5px dashed var(--line-solid);
-    border-radius:14px;background:var(--panel);padding:44px 24px;text-align:center;
-    cursor:pointer;transition:border-color .18s,background .18s,transform .18s}
+  .tabs{display:flex;gap:6px;margin:22px 0 4px;flex-wrap:wrap}
+  .tab{font-family:var(--mono);font-size:12.5px;font-weight:500;color:var(--muted);
+    background:var(--panel);border:1px solid var(--line-solid);border-radius:9px;
+    padding:10px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+  .tab:hover{color:var(--ink);border-color:#454c5a}
+  .tab.active{color:#1a1205;background:var(--amber);border-color:var(--amber);font-weight:600}
+  .tab .n{font-size:10px;opacity:.6}
+  .panel{display:none;animation:fade .25s ease both}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .intro{color:var(--muted);font-size:13px;line-height:1.6;margin:14px 0 0;max-width:62ch}
+  .intro b{color:var(--amber-soft);font-weight:600}
+
+  .drop{margin-top:16px;border:1.5px dashed var(--line-solid);border-radius:14px;background:var(--panel);
+    padding:38px 24px;text-align:center;cursor:pointer;transition:border-color .18s,background .18s,transform .18s}
   .drop:hover{border-color:var(--amber);background:var(--panel-2)}
   .drop.over{border-color:var(--amber);background:#26211a;transform:scale(1.005)}
-  .drop .ico{width:54px;height:54px;margin:0 auto 16px;border-radius:12px;display:grid;
-    place-items:center;background:#2a2f39;border:1px solid #3a4150}
-  .drop .ico svg{width:26px;height:26px;stroke:var(--amber)}
-  .drop .big{font-family:var(--disp);font-weight:700;font-size:21px;margin-bottom:6px}
-  .drop .small{color:var(--muted);font-size:12.5px;line-height:1.5}
-  .formats{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-  .chip{font-size:10.5px;letter-spacing:.08em;color:var(--muted);border:1px solid #353b46;
-    border-radius:999px;padding:3px 9px;text-transform:uppercase}
+  .drop .ico{width:50px;height:50px;margin:0 auto 14px;border-radius:12px;display:grid;place-items:center;
+    background:#2a2f39;border:1px solid #3a4150}
+  .drop .ico svg{width:24px;height:24px;stroke:var(--amber)}
+  .drop .big{font-family:var(--disp);font-weight:700;font-size:19px;margin-bottom:5px}
+  .drop .small{color:var(--muted);font-size:12px;line-height:1.5}
+  .formats{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .chip{font-size:10px;letter-spacing:.08em;color:var(--muted);border:1px solid #353b46;border-radius:999px;padding:3px 9px;text-transform:uppercase}
   input[type=file]{display:none}
 
-  .results{margin-top:22px;display:flex;flex-direction:column;gap:12px}
-  .card{background:var(--panel);border:1px solid var(--line-solid);border-radius:12px;
-    padding:16px;animation:rise .35s cubic-bezier(.2,.7,.3,1) both}
+  .opts{margin-top:14px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+  .opts label{display:flex;align-items:center;gap:7px;cursor:pointer}
+  .opts select{font-family:var(--mono);font-size:12px;background:var(--panel-2);color:var(--ink);
+    border:1px solid var(--line-solid);border-radius:7px;padding:6px 8px}
+  .opts input[type=checkbox]{accent-color:var(--amber);width:15px;height:15px}
+
+  .results{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line-solid);border-radius:12px;padding:16px;
+    animation:rise .35s cubic-bezier(.2,.7,.3,1) both}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .card .top{display:flex;align-items:flex-start;gap:12px}
-  .badge{flex:none;width:40px;height:40px;border-radius:9px;display:grid;place-items:center;
-    font-family:var(--disp);font-weight:800;font-size:13px}
+  .badge{flex:none;width:38px;height:38px;border-radius:9px;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:12px}
   .badge.ok{background:rgba(57,217,138,.12);color:var(--green);border:1px solid rgba(57,217,138,.3)}
   .badge.err{background:rgba(255,107,107,.12);color:var(--red);border:1px solid rgba(255,107,107,.3)}
+  .badge.info{background:rgba(90,169,255,.12);color:var(--blue);border:1px solid rgba(90,169,255,.3)}
   .meta{flex:1;min-width:0}
   .fname{font-family:var(--disp);font-weight:700;font-size:15px;word-break:break-all;line-height:1.2}
   .detail{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.55}
   .detail b{color:var(--amber-soft);font-weight:600}
   .arrow{color:var(--muted);padding:0 4px}
-  .dl{margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:var(--amber);
-    color:#1a1205;border:none;border-radius:8px;font-family:var(--mono);font-weight:600;
-    font-size:12.5px;letter-spacing:.04em;padding:10px 14px;cursor:pointer;text-decoration:none;
-    transition:filter .15s,transform .12s}
+
+  .kv{margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:12.5px}
+  .kv dt{color:var(--muted)}
+  .kv dd{color:var(--ink);word-break:break-word}
+  .kv dd.warn{color:var(--amber-soft);font-weight:600}
+  .kv dd.danger{color:var(--red);font-weight:600}
+
+  .sheet{margin-top:12px;border:1px solid var(--line-solid);border-radius:10px;padding:12px 14px;background:var(--panel-2)}
+  .sheet h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pill{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;font-weight:600}
+  .pill.vis{background:rgba(57,217,138,.14);color:var(--green)}
+  .pill.hid{background:rgba(255,138,30,.16);color:var(--amber-soft)}
+  .pill.vhid{background:rgba(255,107,107,.16);color:var(--red)}
+  .sheet .line{font-size:12px;color:var(--muted);line-height:1.6}
+  .sheet .line b{color:var(--ink);font-weight:600}
+  .cols{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px}
+  .col{font-size:10.5px;border:1px solid #3a4150;border-radius:6px;padding:3px 7px;color:var(--ink)}
+  .col span{color:var(--muted)}
+  .frm{margin-top:8px;font-size:11px;color:var(--amber-soft);background:#231c12;border:1px solid #4a3a1c;
+    border-radius:7px;padding:8px 10px;line-height:1.6;word-break:break-all}
+  .frm b{color:var(--amber)}
+
+  .dl{margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:var(--amber);color:#1a1205;
+    border:none;border-radius:8px;font-family:var(--mono);font-weight:600;font-size:12.5px;letter-spacing:.04em;
+    padding:9px 14px;cursor:pointer;text-decoration:none;transition:filter .15s,transform .12s;margin-right:8px}
   .dl:hover{filter:brightness(1.08)}.dl:active{transform:translateY(1px)}
   .dl svg{width:15px;height:15px;stroke:#1a1205}
-  .errmsg{margin-top:10px;font-size:12px;color:var(--red);line-height:1.55}
+  .errmsg{margin-top:8px;font-size:12px;color:var(--red);line-height:1.55}
   .errmsg .tech{opacity:.7}
 
-  .bar{margin-top:18px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  .bar.show{display:flex}
-  .count{font-size:12px;color:var(--muted)}.count b{color:var(--ink);font-weight:600}
-  .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .ghost{background:transparent;color:var(--ink);border:1px solid #3a4150;border-radius:8px;
-    font-family:var(--mono);font-size:12px;padding:9px 14px;cursor:pointer;transition:border-color .15s}
-  .ghost:hover{border-color:var(--amber)}
-  .ghost.primary{background:var(--amber);color:#1a1205;border-color:var(--amber);font-weight:600}
-
-  .how{margin-top:30px;background:var(--panel);border:1px solid var(--line-solid);
-    border-radius:12px;padding:18px 20px}
-  .how h2{font-family:var(--disp);font-size:15px;font-weight:700;margin-bottom:12px;
-    display:flex;align-items:center;gap:8px}
-  .how h2::before{content:"?";display:grid;place-items:center;width:20px;height:20px;
-    background:var(--amber);color:#1a1205;border-radius:5px;font-size:12px}
-  .how ol{margin:0;padding-left:18px;color:var(--muted);font-size:12.5px;line-height:1.75}
-  .how ol b{color:var(--ink);font-weight:600}
-
-  footer{margin-top:30px;border-top:1px solid var(--line-solid);padding-top:16px;
-    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  footer{margin-top:32px;border-top:1px solid var(--line-solid);padding-top:16px;display:flex;
+    justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
   footer p{font-size:11.5px;color:var(--muted);line-height:1.6}
   footer .lock{color:var(--green)}
   footer a{color:var(--amber-soft);text-decoration:none}
   footer a:hover{text-decoration:underline}
-
-  .fatal{margin-top:26px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.3);
+  .fatal{margin-top:20px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.3);
     border-radius:12px;padding:16px;font-size:13px;color:var(--red);line-height:1.6;display:none}
 </style>
 </head>
@@ -112,49 +124,61 @@
   <header>
     <span class="tag">Strumento gratuito · officina</span>
     <h1>Recupera<span class="br">.</span>xls</h1>
-    <p class="lead">I gestionali a volte esportano file Excel in un formato vecchio o con l'estensione sbagliata,
-    e <b>Excel si rifiuta di aprirli</b>. Trascina qui il file: questo strumento riconosce il formato reale
-    e te lo restituisce come <b>.xlsx</b> pulito, apribile da qualsiasi versione di Excel.</p>
   </header>
 
-  <div class="drop" id="drop" tabindex="0">
-    <div class="ico">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-    </div>
-    <div class="big">Trascina qui i file</div>
-    <div class="small">oppure tocca per selezionarli · puoi caricarne più di uno insieme</div>
-    <div class="formats">
-      <span class="chip">.xls</span><span class="chip">.xlsx</span><span class="chip">SYLK</span>
-      <span class="chip">HTML→xls</span><span class="chip">XML 2003</span><span class="chip">.csv</span><span class="chip">.dbf</span>
-    </div>
-  </div>
-  <input type="file" id="file" multiple
-    accept=".xls,.xlsx,.xlsm,.xlsb,.csv,.txt,.xml,.slk,.sylk,.dif,.dbf,.htm,.html,application/vnd.ms-excel">
-
-  <div class="fatal" id="fatal">Errore nel caricamento del motore di conversione. Ricarica la pagina; se il problema persiste, riscarica il file dello strumento.</div>
-
-  <div class="results" id="results"></div>
-
-  <div class="bar" id="bar">
-    <span class="count" id="count"></span>
-    <div class="actions">
-      <button class="ghost" id="reset">Svuota</button>
-      <button class="ghost primary" id="all">Scarica tutti</button>
-    </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="recupera"><span class="n">01</span> Recupera</button>
+    <button class="tab" data-tab="analizza"><span class="n">02</span> Analizza</button>
+    <button class="tab" data-tab="csv"><span class="n">03</span> CSV ⇄ Excel</button>
   </div>
 
-  <section class="how">
-    <h2>Come funziona</h2>
-    <ol>
-      <li>Trascina nel riquadro il file che <b>Excel non riesce ad aprire</b>.</li>
-      <li>Lo strumento ti dice <b>che formato era davvero</b> e lo riconverte.</li>
-      <li>Premi <b>Scarica</b> e apri il nuovo file <b>.xlsx</b> con Excel: si aprirà senza errori.</li>
-    </ol>
+  <div class="fatal" id="fatal">Errore nel caricamento del motore. Ricarica la pagina.</div>
+
+  <!-- TAB 1 -->
+  <section class="panel active" id="p-recupera">
+    <p class="intro">I gestionali esportano file in formati vecchi o con estensione sbagliata e <b>Excel li rifiuta</b>. Trascina qui il file: lo riconosco e te lo restituisco come <b>.xlsx</b> pulito.</p>
+    <div class="drop" data-zone="recupera" tabindex="0">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></div>
+      <div class="big">Trascina qui i file</div>
+      <div class="small">o tocca per selezionarli · anche più di uno</div>
+      <div class="formats"><span class="chip">.xls</span><span class="chip">SYLK</span><span class="chip">HTML→xls</span><span class="chip">XML 2003</span><span class="chip">.csv</span><span class="chip">.dbf</span></div>
+    </div>
+    <input type="file" data-input="recupera" multiple accept=".xls,.xlsx,.xlsm,.xlsb,.csv,.txt,.xml,.slk,.dif,.dbf,.htm,.html,application/vnd.ms-excel">
+    <div class="results" data-results="recupera"></div>
+  </section>
+
+  <!-- TAB 2 -->
+  <section class="panel" id="p-analizza">
+    <p class="intro">Scopri <b>chi ha creato il file</b>, quando, con quale programma, quanti fogli ci sono (anche quelli <b>nascosti</b>), e se contiene <b>formule</b>, collegamenti o note. Niente viene modificato.</p>
+    <div class="drop" data-zone="analizza" tabindex="0">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+      <div class="big">Trascina un file da analizzare</div>
+      <div class="small">.xlsx · .xls · .csv — resta tutto sul tuo dispositivo</div>
+    </div>
+    <input type="file" data-input="analizza" multiple accept=".xls,.xlsx,.xlsm,.xlsb,.csv,.txt,.xml,.dbf">
+    <div class="results" data-results="analizza"></div>
+  </section>
+
+  <!-- TAB 3 -->
+  <section class="panel" id="p-csv">
+    <p class="intro">Converte <b>Excel → CSV</b> e <b>CSV → Excel</b>. La direzione è automatica: se carichi un Excel ottieni il CSV, se carichi un CSV ottieni l'.xlsx. Il separatore CSV viene rilevato da solo.</p>
+    <div class="opts">
+      <label>Separatore CSV in uscita:
+        <select id="fs"><option value=";" selected>;  (Excel Italia)</option><option value=",">,  (standard)</option><option value="&#9;">Tab</option></select>
+      </label>
+      <label><input type="checkbox" id="bom" checked> BOM UTF-8 (consigliato per Excel)</label>
+    </div>
+    <div class="drop" data-zone="csv" tabindex="0">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><path d="M8 4v16" opacity=".5"/></svg></div>
+      <div class="big">Trascina un file da convertire</div>
+      <div class="small">Excel ⇄ CSV · direzione rilevata in automatico</div>
+    </div>
+    <input type="file" data-input="csv" multiple accept=".xls,.xlsx,.xlsm,.xlsb,.csv,.txt,.xml">
+    <div class="results" data-results="csv"></div>
   </section>
 
   <footer>
-    <p><span class="lock">●</span> Tutto avviene sul tuo dispositivo: i file <b>non vengono caricati online</b>. Funziona anche offline.</p>
+    <p><span class="lock">●</span> Tutto in locale: i file <b>non vengono caricati online</b>. Funziona anche offline.</p>
     <p>by <a href="https://alessandropezzali.it" target="_blank" rel="noopener">alessandropezzali.it</a></p>
   </footer>
 </div>
@@ -185,75 +209,194 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 <script>
 (function(){
   if(typeof XLSX==='undefined'){document.getElementById('fatal').style.display='block';return;}
-  const dropEl=document.getElementById('drop'),fileEl=document.getElementById('file'),
-    resEl=document.getElementById('results'),barEl=document.getElementById('bar'),
-    countEl=document.getElementById('count');
-  let converted=[];
+  var $=function(s,r){return (r||document).querySelector(s);};
+  var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
 
-  function fmtSize(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(0)+' KB':(n/1048576).toFixed(1)+' MB';}
-  function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-  function base(n){const i=n.lastIndexOf('.');return i>0?n.slice(0,i):n;}
+  // ---- tabs ----
+  $$('.tab').forEach(function(t){t.addEventListener('click',function(){
+    $$('.tab').forEach(function(x){x.classList.remove('active');});
+    $$('.panel').forEach(function(x){x.classList.remove('active');});
+    t.classList.add('active'); $('#p-'+t.dataset.tab).classList.add('active');
+  });});
+
+  // ---- helpers ----
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function base(n){var i=n.lastIndexOf('.');return i>0?n.slice(0,i):n;}
+  function fmtDate(d){if(!d)return null;try{var x=new Date(d);if(isNaN(x))return String(d);
+    var p=function(n){return (n<10?'0':'')+n;};
+    return p(x.getDate())+'/'+p(x.getMonth()+1)+'/'+x.getFullYear()+' '+p(x.getHours())+':'+p(x.getMinutes());}catch(e){return String(d);}}
+  function dl(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},2000);}
 
   function sniff(b){
-    if(b[0]===0x50&&b[1]===0x4B)return 'Excel moderno (.xlsx, archivio zip)';
-    if(b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0)return 'Excel 97-2003 (.xls binario, estensione spesso errata)';
-    let h='';try{h=new TextDecoder('latin1').decode(b.slice(0,256)).trim().toLowerCase();}catch(e){}
-    if(h.startsWith('id;')||h.startsWith('id_'))return 'SYLK — il formato che dà l\u2019errore "file non valido"';
-    if(h.startsWith('<?xml'))return 'XML SpreadsheetML 2003 (finto .xls)';
-    if(h.indexOf('<table')>=0||h.startsWith('<html')||h.startsWith('<!doctype'))return 'Tabella HTML rinominata in .xls';
-    if(h.startsWith('table')||h.startsWith('0,0'))return 'DIF (Data Interchange Format)';
-    return 'Testo delimitato / CSV';
+    if(b[0]===0x50&&b[1]===0x4B)return {label:'Excel moderno (.xlsx)',sheet:true};
+    if(b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0)return {label:'Excel 97-2003 (.xls binario)',sheet:true};
+    var h='';try{h=new TextDecoder('latin1').decode(b.slice(0,256)).trim().toLowerCase();}catch(e){}
+    if(h.indexOf('id;')===0||h.indexOf('id_')===0)return {label:'SYLK',sheet:true};
+    if(h.indexOf('<?xml')===0)return {label:'XML SpreadsheetML 2003',sheet:true};
+    if(h.indexOf('<table')>=0||h.indexOf('<html')===0||h.indexOf('<!doctype')===0)return {label:'Tabella HTML rinominata',sheet:true};
+    if(h.indexOf('table')===0||h.indexOf('0,0')===0)return {label:'DIF',sheet:true};
+    return {label:'Testo / CSV',sheet:false};
   }
+  function detectDelim(text){
+    var line=text.split(/\r?\n/)[0]||'';
+    var best=',',n=-1;[';',',','\t','|'].forEach(function(d){var c=line.split(d).length;if(c>n){n=c;best=d;}});
+    return best;
+  }
+  function delimName(d){return d===';'?'punto e virgola (;)':d===','?'virgola (,)':d==='\t'?'tabulazione':d==='|'?'barra (|)':d;}
 
-  async function handle(list){for(const f of list)await one(f);updateBar();}
+  function readWB(bytes,opts){return XLSX.read(bytes,Object.assign({type:'array',cellDates:true,cellNF:true,cellFormula:true},opts||{}));}
 
-  async function one(file){
-    const card=document.createElement('div');card.className='card';resEl.appendChild(card);
-    try{
-      const buf=await file.arrayBuffer(),bytes=new Uint8Array(buf),fmt=sniff(bytes);
-      const wb=XLSX.read(bytes,{type:'array',cellDates:true,cellNF:true,codepage:1252});
-      const sheets=wb.SheetNames;
-      if(!sheets.length)throw new Error('Nessun foglio leggibile trovato.');
-      let rows=0,cols=0;const ref=wb.Sheets[sheets[0]]['!ref'];
-      if(ref){const r=XLSX.utils.decode_range(ref);rows=r.e.r-r.s.r+1;cols=r.e.c-r.s.c+1;}
-      const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-      const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-      const outName=base(file.name)+'_corretto.xlsx',url=URL.createObjectURL(blob);
-      converted.push({name:outName,blob});
+  // ============ TAB 1: RECUPERA ============
+  function recupera(file,resEl){
+    var card=document.createElement('div');card.className='card';resEl.appendChild(card);
+    file.arrayBuffer().then(function(buf){
+      var bytes=new Uint8Array(buf),f=sniff(bytes);
+      var wb=readWB(bytes,{codepage:1252});
+      if(!wb.SheetNames.length)throw new Error('Nessun foglio leggibile.');
+      var rows=0,cols=0,ref=wb.Sheets[wb.SheetNames[0]]['!ref'];
+      if(ref){var r=XLSX.utils.decode_range(ref);rows=r.e.r-r.s.r+1;cols=r.e.c-r.s.c+1;}
+      var out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+      var blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      var outName=base(file.name)+'_corretto.xlsx';
+      var url=URL.createObjectURL(blob);
       card.innerHTML='<div class="top"><div class="badge ok">OK</div><div class="meta">'+
-        '<div class="fname">'+esc(file.name)+'</div><div class="detail">Rilevato: <b>'+esc(fmt)+'</b><br>'+
-        sheets.length+' foglio'+(sheets.length>1?'i':'')+' · ~'+rows+' righe \u00d7 '+cols+' colonne (1\u00b0 foglio)'+
-        '<span class="arrow">\u2192</span> riconvertito in <b>.xlsx</b></div></div></div>'+
-        '<a class="dl" href="'+url+'" download="'+esc(outName)+'">'+
-        '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>'+
-        'Scarica '+esc(outName)+'</a>';
-    }catch(err){
-      card.innerHTML='<div class="top"><div class="badge err">!</div><div class="meta">'+
-        '<div class="fname">'+esc(file.name)+'</div>'+
-        '<div class="errmsg">Non sono riuscito a leggere questo file. \u00c8 probabilmente un formato proprietario particolare.<br>'+
-        '<span class="tech">Dettaglio: '+esc(err.message||String(err))+'</span></div></div></div>';
+        '<div class="fname">'+esc(file.name)+'</div><div class="detail">Rilevato: <b>'+esc(f.label)+'</b><br>'+
+        wb.SheetNames.length+' foglio'+(wb.SheetNames.length>1?'i':'')+' · ~'+rows+' righe \u00d7 '+cols+' col<span class="arrow">\u2192</span> riconvertito in <b>.xlsx</b></div></div></div>'+
+        '<a class="dl" href="'+url+'" download="'+esc(outName)+'"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>Scarica '+esc(outName)+'</a>';
+    }).catch(function(err){fail(card,file,err);});
+  }
+
+  // ============ TAB 2: ANALIZZA ============
+  function colType(ws,range,c){
+    var t={},seen=0;
+    for(var r=range.s.r+1;r<=range.e.r&&seen<60;r++){
+      var cell=ws[XLSX.utils.encode_cell({r:r,c:c})];if(!cell)continue;seen++;
+      var k=cell.t==='n'?'numero':cell.t==='d'?'data':cell.t==='b'?'vero/falso':cell.t==='e'?'errore':'testo';
+      t[k]=(t[k]||0)+1;
     }
+    var keys=Object.keys(t);return keys.length===0?'vuota':keys.length===1?keys[0]:'misto';
+  }
+  function analyzeSheet(ws){
+    var ref=ws['!ref'];if(!ref)return {empty:true};
+    var range=XLSX.utils.decode_range(ref);
+    var headers=[],types=[];
+    for(var c=range.s.c;c<=range.e.c;c++){var hc=ws[XLSX.utils.encode_cell({r:range.s.r,c:c})];headers.push(hc?String(hc.v):'(vuota)');types.push(colType(ws,range,c));}
+    var formulas=0,fsamp=[],links=0,comments=0;
+    Object.keys(ws).forEach(function(a){if(a[0]==='!')return;var cell=ws[a];if(cell.f){formulas++;if(fsamp.length<5)fsamp.push(a+' = '+cell.f);}if(cell.l)links++;if(cell.c)comments++;});
+    return {rows:range.e.r-range.s.r,cols:range.e.c-range.s.c+1,headers:headers,types:types,
+      formulas:formulas,fsamp:fsamp,merges:(ws['!merges']||[]).length,links:links,comments:comments};
+  }
+  function analizza(file,resEl){
+    var card=document.createElement('div');card.className='card';resEl.appendChild(card);
+    file.arrayBuffer().then(function(buf){
+      var bytes=new Uint8Array(buf),f=sniff(bytes);
+      if(!f.sheet){return analizzaCSV(card,file,bytes);}
+      var wb=readWB(bytes,{codepage:1252});
+      var P=wb.Props||{},na='<span style="color:var(--muted)">non indicato</span>';
+      var states=(wb.Workbook&&wb.Workbook.Sheets)||[];
+      var names=(wb.Workbook&&wb.Workbook.Names)||[];
+      var hiddenCount=states.filter(function(s){return (s.Hidden||0)>0;}).length;
+      var html='<div class="top"><div class="badge info">i</div><div class="meta"><div class="fname">'+esc(file.name)+'</div>'+
+        '<div class="detail">Formato: <b>'+esc(f.label)+'</b></div></div></div>';
+      html+='<dl class="kv">'+
+        '<dt>Creato da</dt><dd>'+(P.Author?esc(P.Author):na)+'</dd>'+
+        '<dt>Ultima modifica di</dt><dd>'+(P.LastAuthor?esc(P.LastAuthor):na)+'</dd>'+
+        '<dt>Programma</dt><dd>'+(P.Application?esc(P.Application)+(P.AppVersion?' '+esc(P.AppVersion):''):na)+'</dd>'+
+        '<dt>Data creazione</dt><dd>'+(fmtDate(P.CreatedDate)?esc(fmtDate(P.CreatedDate)):na)+'</dd>'+
+        '<dt>Data modifica</dt><dd>'+(fmtDate(P.ModifiedDate)?esc(fmtDate(P.ModifiedDate)):na)+'</dd>'+
+        (P.Company?'<dt>Azienda</dt><dd>'+esc(P.Company)+'</dd>':'')+
+        '<dt>Fogli totali</dt><dd>'+wb.SheetNames.length+'</dd>'+
+        '<dt>Fogli nascosti</dt><dd class="'+(hiddenCount?'warn':'')+'">'+(hiddenCount?hiddenCount+' (vedi sotto)':'nessuno')+'</dd>'+
+        (names.length?'<dt>Nomi/intervalli definiti</dt><dd class="warn">'+names.length+'</dd>':'')+
+        '</dl>';
+      wb.SheetNames.forEach(function(n,i){
+        var st=states[i]?(states[i].Hidden||0):0;
+        var pill=st===2?'<span class="pill vhid">molto nascosto</span>':st===1?'<span class="pill hid">nascosto</span>':'<span class="pill vis">visibile</span>';
+        var a=analyzeSheet(wb.Sheets[n]);
+        html+='<div class="sheet"><h4>'+esc(n)+' '+pill+'</h4>';
+        if(a.empty){html+='<div class="line">Foglio vuoto.</div></div>';return;}
+        html+='<div class="line"><b>'+a.rows+'</b> righe di dati \u00d7 <b>'+a.cols+'</b> colonne'+
+          (a.formulas?' · <b style="color:var(--amber-soft)">'+a.formulas+' celle con formula</b>':' · nessuna formula')+
+          (a.merges?' · '+a.merges+' celle unite':'')+(a.links?' · '+a.links+' collegamenti':'')+(a.comments?' · '+a.comments+' note':'')+'</div>';
+        html+='<div class="cols">';
+        for(var c=0;c<a.headers.length;c++)html+='<span class="col">'+esc(a.headers[c])+' <span>'+a.types[c]+'</span></span>';
+        html+='</div>';
+        if(a.fsamp.length){html+='<div class="frm"><b>Formule presenti (esempi):</b><br>'+a.fsamp.map(esc).join('<br>')+'</div>';}
+        html+='</div>';
+      });
+      if(hiddenCount){html+='<div class="frm" style="color:var(--amber-soft)"><b>Attenzione:</b> il file contiene fogli nascosti. I fogli "molto nascosti" non sono visibili dal menu di Excel e si riattivano solo via macro/VBA.</div>';}
+      card.innerHTML=html;
+    }).catch(function(err){fail(card,file,err);});
+  }
+  function analizzaCSV(card,file,bytes){
+    var bom=bytes[0]===0xEF&&bytes[1]===0xBB&&bytes[2]===0xBF;
+    var text=new TextDecoder('utf-8').decode(bytes);
+    var d=detectDelim(text);
+    var lines=text.split(/\r?\n/).filter(function(l){return l.length;});
+    var cols=(lines[0]||'').split(d);
+    card.innerHTML='<div class="top"><div class="badge info">i</div><div class="meta"><div class="fname">'+esc(file.name)+'</div>'+
+      '<div class="detail">Formato: <b>file di testo / CSV</b></div></div></div>'+
+      '<dl class="kv"><dt>Separatore</dt><dd>'+esc(delimName(d))+'</dd>'+
+      '<dt>Codifica</dt><dd>UTF-8'+(bom?' con BOM':'')+'</dd>'+
+      '<dt>Righe</dt><dd>'+lines.length+' (incl. intestazione)</dd>'+
+      '<dt>Colonne</dt><dd>'+cols.length+'</dd></dl>'+
+      '<div class="cols">'+cols.map(function(h){return '<span class="col">'+esc(h.trim())+'</span>';}).join('')+'</div>';
   }
 
-  function updateBar(){
-    if(converted.length){barEl.classList.add('show');
-      countEl.innerHTML='<b>'+converted.length+'</b> file convertit'+(converted.length>1?'i':'o')+' con successo';}
+  // ============ TAB 3: CSV <-> EXCEL ============
+  function csvtab(file,resEl){
+    var card=document.createElement('div');card.className='card';resEl.appendChild(card);
+    var FS=$('#fs').value, useBom=$('#bom').checked;
+    file.arrayBuffer().then(function(buf){
+      var bytes=new Uint8Array(buf),f=sniff(bytes);
+      if(f.sheet){
+        // Excel -> CSV (uno per foglio)
+        var wb=readWB(bytes,{codepage:1252});
+        var links='';
+        wb.SheetNames.forEach(function(n){
+          var csv=XLSX.utils.sheet_to_csv(wb.Sheets[n],{FS:FS,blankrows:false});
+          var parts=useBom?['\uFEFF',csv]:[csv];
+          var blob=new Blob(parts,{type:'text/csv;charset=utf-8'});
+          var nm=base(file.name)+(wb.SheetNames.length>1?'_'+n:'')+'.csv';
+          var url=URL.createObjectURL(blob);
+          links+='<a class="dl" href="'+url+'" download="'+esc(nm)+'"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>'+esc(nm)+'</a>';
+        });
+        card.innerHTML='<div class="top"><div class="badge ok">CSV</div><div class="meta"><div class="fname">'+esc(file.name)+'</div>'+
+          '<div class="detail">Excel <span class="arrow">\u2192</span> CSV · separatore <b>'+esc(FS==='\t'?'Tab':FS)+'</b>'+(useBom?' · BOM':'')+' · '+wb.SheetNames.length+' foglio/i</div></div></div>'+links;
+      }else{
+        // CSV -> Excel
+        var text=new TextDecoder('utf-8').decode(bytes).replace(/^\uFEFF/,'');
+        var d=detectDelim(text);
+        var wb=XLSX.read(text,{type:'string',FS:d,raw:false});
+        var out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+        var blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        var nm=base(file.name)+'.xlsx',url=URL.createObjectURL(blob);
+        var ref=wb.Sheets[wb.SheetNames[0]]['!ref'],rows=0,cols=0;
+        if(ref){var r=XLSX.utils.decode_range(ref);rows=r.e.r-r.s.r+1;cols=r.e.c-r.s.c+1;}
+        card.innerHTML='<div class="top"><div class="badge ok">XLSX</div><div class="meta"><div class="fname">'+esc(file.name)+'</div>'+
+          '<div class="detail">CSV (separatore '+esc(delimName(d))+') <span class="arrow">\u2192</span> Excel · ~'+rows+' righe \u00d7 '+cols+' col</div></div></div>'+
+          '<a class="dl" href="'+url+'" download="'+esc(nm)+'"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>Scarica '+esc(nm)+'</a>';
+      }
+    }).catch(function(err){fail(card,file,err);});
   }
 
-  document.getElementById('all').addEventListener('click',function(){
-    converted.forEach(function(c,i){setTimeout(function(){
-      const u=URL.createObjectURL(c.blob),a=document.createElement('a');
-      a.href=u;a.download=c.name;document.body.appendChild(a);a.click();a.remove();
-      setTimeout(function(){URL.revokeObjectURL(u);},2000);},i*250);});
+  function fail(card,file,err){
+    card.innerHTML='<div class="top"><div class="badge err">!</div><div class="meta"><div class="fname">'+esc(file.name)+'</div>'+
+      '<div class="errmsg">Non sono riuscito a elaborare questo file.<br><span class="tech">Dettaglio: '+esc(err&&err.message?err.message:String(err))+'</span></div></div></div>';
+  }
+
+  // ---- wiring drop/input per ogni tab ----
+  var handlers={recupera:recupera,analizza:analizza,csv:csvtab};
+  Object.keys(handlers).forEach(function(key){
+    var zone=$('[data-zone="'+key+'"]'),input=$('[data-input="'+key+'"]'),res=$('[data-results="'+key+'"]');
+    function run(list){for(var i=0;i<list.length;i++)handlers[key](list[i],res);}
+    zone.addEventListener('click',function(){input.click();});
+    zone.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click();}});
+    input.addEventListener('change',function(e){run(e.target.files);});
+    ['dragenter','dragover'].forEach(function(ev){zone.addEventListener(ev,function(e){e.preventDefault();zone.classList.add('over');});});
+    ['dragleave','drop'].forEach(function(ev){zone.addEventListener(ev,function(e){e.preventDefault();zone.classList.remove('over');});});
+    zone.addEventListener('drop',function(e){if(e.dataTransfer.files.length)run(e.dataTransfer.files);});
   });
-  document.getElementById('reset').addEventListener('click',function(){
-    converted=[];resEl.innerHTML='';barEl.classList.remove('show');fileEl.value='';});
-  dropEl.addEventListener('click',function(){fileEl.click();});
-  dropEl.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();fileEl.click();}});
-  fileEl.addEventListener('change',function(e){handle(e.target.files);});
-  ['dragenter','dragover'].forEach(function(ev){dropEl.addEventListener(ev,function(e){e.preventDefault();dropEl.classList.add('over');});});
-  ['dragleave','drop'].forEach(function(ev){dropEl.addEventListener(ev,function(e){e.preventDefault();dropEl.classList.remove('over');});});
-  dropEl.addEventListener('drop',function(e){if(e.dataTransfer.files.length)handle(e.dataTransfer.files);});
   window.addEventListener('dragover',function(e){e.preventDefault();});
   window.addEventListener('drop',function(e){e.preventDefault();});
 })();
